@@ -1,0 +1,21 @@
+{
+  "name": "dsh-sketchpad",
+  "description": "Sketchpad for the DSH Web GUI: a whiteboard entry in the composer tool row (brush/eraser/undo) that inserts drawings as draft images, plus click-to-preview/edit on pasted draft images with replace-on-insert",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-conversation"
+      ]
+    }
+  },
+  "license": "MIT"
+}
