@@ -1,0 +1,4 @@
+# Sketchpad bundle: mounts the host row that serves the client half.
+- insert:
+    - id: sketchpad
+      name: dsh-sketchpad

@@ -34,58 +34,39 @@ machine only exposes append).
 ## Repository layout
 
 ```
-package.json      plugin manifest (dsh.client declaration, exports["./client"])
+package.json      plugin manifest (dsh.bundle.patch, dsh.client, exports["./client"])
+cordis.patch.yml  bundle patch: inserts the host row
 lib/index.js      host half: empty shell (pure browser plugin)
 lib/client.js     client half: entry button, attachment rail, whiteboard overlay
 ```
 
 ## Installation
 
-Prerequisites: a working dsh install (the `dsh` CLI on PATH, with a web
-profile).
+This package is a **profile bundle**: `package.json` declares
+`dsh.bundle.patch`, and `cordis.patch.yml` inserts the host row. One command
+installs it into a profile — it links the package, registers the bundle and
+enables the row — and the change applies immediately through HMR:
 
-### 1. Install the package
-
-Junction (keeps the live link to this repository; recommended for development):
-
-```powershell
-New-Item -ItemType Junction -Path "$HOME\.dsh\profiles\node_modules\dsh-sketchpad" -Target "E:\dsh\dsh-plugin-sketchpad"
+```
+plugin_manager action=install_bundle target=E:\dsh\dsh-plugin-sketchpad
 ```
 
-or copy it:
+Do not write the profile's `package.json` or `cordis.patch.yml` by hand, and do
+not Junction the package into `$DSH_HOME\profiles\node_modules`.
 
-```powershell
-New-Item -ItemType Directory -Force "$HOME\.dsh\profiles\node_modules"
-Copy-Item -Recurse . "$HOME\.dsh\profiles\node_modules\dsh-sketchpad"
-```
+> **Why the old Junction method broke on Desktop 0.2.0:** a Junction-mounted
+> package resolves its `@deepseek-ai/*` peers against
+> `$DSH_HOME\profiles\node_modules`, which the Desktop module resolver treats as
+> an **obsolete fallback** and rejects. `install_bundle` links the package under
+> the profile instead, so peers resolve from the app's own install.
 
-The bare specifier `dsh-sketchpad` then resolves from every profile.
+### Verify
 
-### 2. Mount the row
-
-The row publishes no service, so it needs no `isolate` realm. Add an `insert`
-entry to the web profile's patch layer `$HOME\.dsh\profiles\web\cordis.patch.yml`:
-
-```yaml
-- insert:
-    - id: sketchpad
-      name: dsh-sketchpad
-```
-
-Profile boot watches this file (`watchUserPatches`), so the edit hot-reloads
-into the running server — no restart needed. Every session gets the
-whiteboard entry and the attachment rail.
-
-### 3. Verify the mount, then refresh
-
-- the served web root embeds `window.__DSH_BOOT__`; its `entries` list must
-  contain id `dsh-sketchpad` (the entry id is the PACKAGE name, not the row
-  id), and
-- `GET /plugins/dsh-sketchpad/client.js` must return 200.
-
-Then refresh the browser once: the `✏️ 画板` button appears in the composer
-tool row, and clicking a pasted draft image opens the editor instead of the
-plain lightbox.
+- the row `include:sketchpad` reports `enabled: true, fiberPhase: "active"`
+  (`plugin_manager action=list_plugins`), then
+- refresh the browser once: the `✏️ 画板` button appears in the composer tool
+  row, and clicking a pasted draft image opens the editor instead of the plain
+  lightbox.
 
 ## License
 
